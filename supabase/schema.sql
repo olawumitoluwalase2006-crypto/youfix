@@ -19,7 +19,8 @@ CREATE TABLE IF NOT EXISTS public.diagnoses (
             'Clogged drain',
             'Damaged electrical socket',
             'Flat tire',
-            'Overheating engine'
+            'Overheating engine',
+            'Invalid Image'
         )
     ),
     cause TEXT NOT NULL,

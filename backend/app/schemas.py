@@ -10,6 +10,7 @@ class CategoryEnum(str, Enum):
     DAMAGED_ELECTRICAL_SOCKET = "Damaged electrical socket"
     FLAT_TIRE = "Flat tire"
     OVERHEATING_ENGINE = "Overheating engine"
+    INVALID_IMAGE = "Invalid Image"
 
 
 class RiskLevelEnum(str, Enum):
@@ -22,7 +23,7 @@ class GeminiDiagnosisOutput(BaseModel):
     """Schema expected from Google Gemini Vision API structured response."""
     category: CategoryEnum = Field(
         ...,
-        description="The fault category strictly classified into one of the 5 allowed categories."
+        description="The fault category strictly classified into one of the allowed categories."
     )
     cause: str = Field(
         ...,
@@ -53,14 +54,49 @@ class GeminiDiagnosisOutput(BaseModel):
         description="Numbered step-by-step repair or mitigation instructions."
     )
 
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_aliases(cls, data):
+        """Allow flexibility if Gemini returns 'risk' instead of 'risk_level' or 'diy' instead of 'is_diy'."""
+        if isinstance(data, dict):
+            if "risk" in data and "risk_level" not in data:
+                data["risk_level"] = data["risk"]
+            if "diy" in data and "is_diy" not in data:
+                data["is_diy"] = data["diy"]
+            # Normalize category if invalid image variant returned
+            cat = str(data.get("category", "")).strip().lower()
+            if cat in ("invalid image", "invalid", "invalid_image", "non-repair", "not a fault") or "invalid" in cat:
+                data["category"] = CategoryEnum.INVALID_IMAGE.value
+                if not data.get("cause") or data.get("cause") == "Detailed technical root cause deduced from visual evidence":
+                    data["cause"] = "The uploaded image does not appear to show a household or automotive fault."
+                if not data.get("recommended_action"):
+                    data["recommended_action"] = "Please upload a clear, focused photo of an actual repair fault."
+        return data
+
     @model_validator(mode="after")
     def enforce_safety_constraints(self):
         """
         Enforce strict safety rules:
-        If a problem involves severe hazards (like Damaged electrical socket or Overheating engine,
-        or High risk), professional_required must be set to True and is_diy to False,
-        with a prominent safety warning.
+        - If an Invalid Image is detected, ensure non-hazardous defaults.
+        - If a problem involves severe hazards (like Damaged electrical socket or Overheating engine,
+          or High risk), professional_required must be set to True and is_diy to False,
+          with a prominent safety warning.
         """
+        # Guardrail for Invalid Image
+        if self.category == CategoryEnum.INVALID_IMAGE:
+            self.professional_required = False
+            self.is_diy = False
+            self.risk_level = RiskLevelEnum.LOW
+            if not self.safety_warning or not self.safety_warning.strip():
+                self.safety_warning = "Invalid image detected. Please submit a valid photo of a plumbing, electrical, or automotive problem."
+            if not self.instructions:
+                self.instructions = [
+                    "Ensure the problem area is well-lit",
+                    "Take a close-up photo of the specific fault",
+                    "Try uploading again with a valid repair image"
+                ]
+            return self
+
         # Critical high hazard categories
         severe_categories = {
             CategoryEnum.DAMAGED_ELECTRICAL_SOCKET,

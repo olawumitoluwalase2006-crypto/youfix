@@ -36,6 +36,8 @@ export const HistoryCard: React.FC<HistoryCardProps> = ({ diagnosis }) => {
         return Disc;
       case "Overheating engine":
         return Flame;
+      case "Invalid Image":
+        return AlertTriangle;
       default:
         return Wrench;
     }
@@ -74,7 +76,12 @@ export const HistoryCard: React.FC<HistoryCardProps> = ({ diagnosis }) => {
           </div>
 
           <div className="absolute top-2.5 right-2.5">
-            {diagnosis.professional_required ? (
+            {diagnosis.category === "Invalid Image" ? (
+              <span className="flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-amber-500 text-white shadow-sm">
+                <AlertTriangle className="w-3 h-3" />
+                Invalid Photo
+              </span>
+            ) : diagnosis.professional_required ? (
               <span className="flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-rose-600 text-white shadow-sm">
                 <AlertTriangle className="w-3 h-3" />
                 Pro Required
@@ -141,8 +148,18 @@ export const HistoryCard: React.FC<HistoryCardProps> = ({ diagnosis }) => {
               </button>
             </div>
 
-            {/* Warning or DIY Callout */}
-            {diagnosis.professional_required ? (
+            {/* Warning, Invalid Image, or DIY Callout */}
+            {diagnosis.category === "Invalid Image" ? (
+              <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 space-y-1">
+                <div className="flex items-center gap-2 font-bold text-sm text-amber-800">
+                  <AlertTriangle className="w-4 h-4 text-amber-600" />
+                  <span>Non-Repair / Invalid Image</span>
+                </div>
+                <p className="text-xs text-amber-700">
+                  {diagnosis.safety_warning || "The uploaded image does not appear to show a household or automotive fault."}
+                </p>
+              </div>
+            ) : diagnosis.professional_required ? (
               <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 space-y-1">
                 <div className="flex items-center gap-2 font-bold text-sm text-rose-800">
                   <AlertTriangle className="w-4 h-4 text-rose-600" />

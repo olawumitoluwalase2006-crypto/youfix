@@ -79,34 +79,57 @@ export const Navbar: React.FC = () => {
           })}
         </nav>
 
-        {/* Backend Status indicator */}
-        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100/80 border border-slate-200 text-xs">
-          <div className="flex items-center gap-1.5 font-medium">
-            <span
-              className={`w-2 h-2 rounded-full ${
-                backendStatus === "online"
-                  ? "bg-emerald-500 animate-pulse"
-                  : backendStatus === "checking"
-                  ? "bg-amber-400 animate-ping"
-                  : "bg-rose-500"
-              }`}
-            />
-            <span className="text-slate-600">API:</span>
-            <span
-              className={`font-semibold ${
-                backendStatus === "online"
-                  ? "text-emerald-700"
-                  : backendStatus === "checking"
-                  ? "text-amber-700"
-                  : "text-rose-700"
-              }`}
-            >
-              {backendStatus === "online"
-                ? "Connected"
-                : backendStatus === "checking"
-                ? "Connecting..."
-                : "Standalone"}
+        {/* Right Actions: Tool Rush Game Link & Backend Status */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Cyber-Workshop Game Link */}
+          <a
+            href="https://you-fix-tool-rush.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="relative group inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-black text-cyan-950 bg-gradient-to-r from-cyan-400/20 via-teal-400/25 to-cyan-500/20 hover:from-cyan-400/35 hover:via-teal-400/40 hover:to-cyan-500/35 border border-cyan-400/60 hover:border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:shadow-[0_0_24px_rgba(20,184,166,0.5)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+            title="Launch Tool Rush interactive game in new tab"
+          >
+            <span className="flex items-center gap-1.5">
+              <span className="text-sm sm:text-base leading-none">🎮</span>
+              <span className="tracking-tight bg-gradient-to-r from-cyan-800 via-teal-800 to-cyan-900 bg-clip-text text-transparent font-black">
+                Play Tool Rush
+              </span>
             </span>
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
+            </span>
+          </a>
+
+          {/* Backend Status indicator */}
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100/80 border border-slate-200 text-xs">
+            <div className="flex items-center gap-1.5 font-medium">
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  backendStatus === "online"
+                    ? "bg-emerald-500 animate-pulse"
+                    : backendStatus === "checking"
+                    ? "bg-amber-400 animate-ping"
+                    : "bg-rose-500"
+                }`}
+              />
+              <span className="text-slate-600">API:</span>
+              <span
+                className={`font-semibold ${
+                  backendStatus === "online"
+                    ? "text-emerald-700"
+                    : backendStatus === "checking"
+                    ? "text-amber-700"
+                    : "text-rose-700"
+                }`}
+              >
+                {backendStatus === "online"
+                  ? "Connected"
+                  : backendStatus === "checking"
+                  ? "Connecting..."
+                  : "Standalone"}
+              </span>
+            </div>
           </div>
         </div>
       </div>

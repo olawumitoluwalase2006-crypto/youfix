@@ -13,15 +13,32 @@ logger = logging.getLogger(__name__)
 GEMINI_SYSTEM_PROMPT = """You are YouFix AI, an expert industrial safety engineer, master plumber, master electrician, and automotive specialist.
 Your mission is to accurately diagnose physical faults from user photos and provide actionable, safety-first repair protocols.
 
-STRICT CLASSIFICATION RULES:
-1. You MUST strictly classify the problem into EXACTLY ONE of these 5 categories ONLY:
+IMAGE VALIDATION GUARDRAIL (CRITICAL FIRST STEP):
+First, examine whether the uploaded photo actually depicts a genuine household or automotive fault (plumbing, electrical, structural, or automotive mechanical problem).
+- If the image is NOT a household or automotive fault (for example: a human hand, face, selfie, person, animal, food, random object, document, artwork, or unrelated scenery), DO NOT force it into one of the repair categories.
+- Instead, you MUST strictly return the following JSON:
+{
+  "category": "Invalid Image",
+  "cause": "The uploaded image does not appear to show a household or automotive fault.",
+  "risk_level": "Low",
+  "recommended_action": "Please upload a clear, focused photo of an actual repair fault.",
+  "is_diy": false,
+  "professional_required": false,
+  "safety_warning": "Invalid image detected. Please submit a valid photo of a plumbing, electrical, or automotive problem.",
+  "instructions": [
+    "Ensure the problem area is well-lit",
+    "Take a close-up photo of the specific fault",
+    "Try uploading again with a valid repair image"
+  ]
+}
+
+STRICT CLASSIFICATION RULES FOR VALID FAULTS:
+If the image IS a valid fault, you MUST strictly classify the problem into EXACTLY ONE of these 5 categories ONLY:
    - "Leaking pipe"
    - "Clogged drain"
    - "Damaged electrical socket"
    - "Flat tire"
    - "Overheating engine"
-
-If the visual evidence is closest to any of these categories, choose the best match.
 
 CRITICAL SAFETY & HAZARD ENFORCEMENT:
 - "Damaged electrical socket": Electrical faults carry severe electrocution and fire hazard. You MUST set "professional_required": true, "is_diy": false, and "risk_level": "High". Provide a prominent safety_warning instructing the user to shut off the breaker panel immediately and call a certified electrician.
@@ -31,7 +48,7 @@ CRITICAL SAFETY & HAZARD ENFORCEMENT:
 OUTPUT FORMAT:
 Return pure, valid JSON with no markdown wrapping, matching this exact JSON schema:
 {
-  "category": "Leaking pipe" | "Clogged drain" | "Damaged electrical socket" | "Flat tire" | "Overheating engine",
+  "category": "Leaking pipe" | "Clogged drain" | "Damaged electrical socket" | "Flat tire" | "Overheating engine" | "Invalid Image",
   "cause": "Detailed technical root cause deduced from visual evidence",
   "risk_level": "Low" | "Medium" | "High",
   "recommended_action": "Concise summary of immediate next step",
@@ -154,6 +171,23 @@ class GeminiService:
         Inspects filename hints or returns a standard DIY or Pro demonstration fault.
         """
         fname = (filename or "").lower()
+
+        # Invalid Image Guardrail Mock
+        if any(w in fname for w in ["invalid", "hand", "face", "food", "person", "dog", "cat", "selfie", "random", "scenery"]):
+            return GeminiDiagnosisOutput(
+                category=CategoryEnum.INVALID_IMAGE,
+                cause="The uploaded image does not appear to show a household or automotive fault.",
+                risk_level=RiskLevelEnum.LOW,
+                recommended_action="Please upload a clear, focused photo of an actual repair fault.",
+                is_diy=False,
+                professional_required=False,
+                safety_warning="Invalid image detected. Please submit a valid photo of a plumbing, electrical, or automotive problem.",
+                instructions=[
+                    "Ensure the problem area is well-lit",
+                    "Take a close-up photo of the specific fault",
+                    "Try uploading again with a valid repair image"
+                ]
+            )
 
         if "pipe" in fname or "leak" in fname or "water" in fname:
             return GeminiDiagnosisOutput(

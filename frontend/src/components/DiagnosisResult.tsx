@@ -69,6 +69,12 @@ export const DiagnosisResult: React.FC<DiagnosisResultProps> = ({ diagnosis, onR
           badgeBg: "bg-orange-100 text-orange-800 border-orange-200",
           domain: "Automotive",
         };
+      case "Invalid Image":
+        return {
+          icon: AlertTriangle,
+          badgeBg: "bg-amber-100 text-amber-800 border-amber-200",
+          domain: "Verification Guardrail",
+        };
       default:
         return {
           icon: Wrench,
@@ -166,8 +172,43 @@ export const DiagnosisResult: React.FC<DiagnosisResultProps> = ({ diagnosis, onR
 
         {/* Content Body */}
         <div className="p-6 sm:p-8 space-y-8">
-          {/* CRITICAL WARNING / PROFESSIONAL REQUIRED BOX */}
-          {diagnosis.professional_required ? (
+          {/* CRITICAL WARNING / PROFESSIONAL REQUIRED / INVALID IMAGE BOX */}
+          {diagnosis.category === "Invalid Image" ? (
+            <div className="p-5 sm:p-6 rounded-2xl bg-amber-50 border-2 border-amber-300 text-amber-950 space-y-3 shadow-md shadow-amber-100">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center flex-shrink-0 shadow-md">
+                  <AlertTriangle className="w-6 h-6" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="text-lg font-black tracking-tight text-amber-900 uppercase">
+                      ⚠️ Non-Repair Image Detected
+                    </h3>
+                    <span className="text-xs font-extrabold px-2.5 py-1 rounded-md bg-amber-200 text-amber-900">
+                      Re-Upload Recommended
+                    </span>
+                  </div>
+                  <p className="text-sm font-semibold text-amber-900 mt-1">
+                    {diagnosis.safety_warning ||
+                      "The uploaded image does not appear to show a household or automotive fault."}
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-amber-200/80">
+                <div className="text-xs text-amber-800 font-medium">
+                  Please submit a clear, focused photo of a plumbing, electrical, or automotive problem.
+                </div>
+                <button
+                  onClick={onReset}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-md shadow-amber-600/30 transition-all no-print"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  <span>Upload Another Photo</span>
+                </button>
+              </div>
+            </div>
+          ) : diagnosis.professional_required ? (
             <div className="p-5 sm:p-6 rounded-2xl bg-rose-50 border-2 border-rose-300 text-rose-950 space-y-3 shadow-md shadow-rose-100">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center flex-shrink-0 shadow-md">
@@ -282,10 +323,16 @@ export const DiagnosisResult: React.FC<DiagnosisResultProps> = ({ diagnosis, onR
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
                 <h3 className="text-lg font-bold text-slate-900">
-                  {diagnosis.is_diy ? "Step-by-Step DIY Repair Protocol" : "Safe Isolation & Pre-Professional Steps"}
+                  {diagnosis.category === "Invalid Image"
+                    ? "Photo Submission Recommendations"
+                    : diagnosis.is_diy
+                    ? "Step-by-Step DIY Repair Protocol"
+                    : "Safe Isolation & Pre-Professional Steps"}
                 </h3>
                 <p className="text-xs text-slate-500">
-                  {diagnosis.is_diy
+                  {diagnosis.category === "Invalid Image"
+                    ? "Follow these tips to get an accurate AI fault assessment."
+                    : diagnosis.is_diy
                     ? "Check off each step as you complete it safely."
                     : "Follow these containment steps until certified personnel arrive."}
                 </p>

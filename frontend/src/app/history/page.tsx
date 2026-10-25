@@ -180,6 +180,7 @@ export default function HistoryPage() {
               <option value="Damaged electrical socket">Damaged electrical socket</option>
               <option value="Flat tire">Flat tire</option>
               <option value="Overheating engine">Overheating engine</option>
+              <option value="Invalid Image">Invalid Image</option>
             </select>
 
             {/* Risk Level Dropdown */}

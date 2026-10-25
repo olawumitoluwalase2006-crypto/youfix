@@ -109,3 +109,28 @@ def test_stats_endpoint():
     assert "total_diagnoses" in data
     assert "diy_eligible" in data
     assert "professional_required" in data
+
+
+def test_invalid_image_guardrail():
+    """Verify Invalid Image guardrail sets expected non-fault attributes."""
+    raw_data = {
+        "category": "Invalid Image",
+        "cause": "The uploaded image does not appear to show a household or automotive fault.",
+        "risk": "Low",
+        "recommended_action": "Please upload a clear, focused photo of an actual repair fault.",
+        "diy": False,
+        "professional_required": False,
+        "safety_warning": "Invalid image detected. Please submit a valid photo of a plumbing, electrical, or automotive problem.",
+        "instructions": [
+            "Ensure the problem area is well-lit",
+            "Take a close-up photo of the specific fault",
+            "Try uploading again with a valid repair image"
+        ]
+    }
+    diagnosis = GeminiDiagnosisOutput(**raw_data)
+    assert diagnosis.category == CategoryEnum.INVALID_IMAGE
+    assert diagnosis.is_diy is False
+    assert diagnosis.professional_required is False
+    assert diagnosis.risk_level == RiskLevelEnum.LOW
+    assert "Invalid image detected" in diagnosis.safety_warning
+    assert len(diagnosis.instructions) == 3

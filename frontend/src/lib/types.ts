@@ -3,7 +3,8 @@ export type ProblemCategory =
   | "Clogged drain"
   | "Damaged electrical socket"
   | "Flat tire"
-  | "Overheating engine";
+  | "Overheating engine"
+  | "Invalid Image";
 
 export type RiskLevel = "Low" | "Medium" | "High";
 
