@@ -14,7 +14,7 @@ class Settings(BaseSettings):
 
     # Google Gemini Vision API Configuration
     GEMINI_API_KEY: str = Field(default="", description="Google Gemini API Key")
-    GEMINI_MODEL: str = Field(default="gemini-1.5-flash", description="Gemini Vision Model identifier")
+    GEMINI_MODEL: str = Field(default="gemini-2.5-flash", description="Gemini Vision Model identifier")
 
     # Supabase Configuration
     SUPABASE_URL: str = Field(default="", description="Supabase project URL")
