@@ -74,35 +74,25 @@ class GeminiService:
         self._init_client()
 
     def _init_client(self):
-        """Initialize the Google GenAI or GenerativeAI client if key exists."""
+        """Initialize the Google GenAI or GenerativeAI client quickly."""
         if not self.api_key or self.api_key.startswith("your_"):
             logger.warning("Gemini API key is not configured. Mock diagnosis fallback will be used if enabled.")
             return
 
         try:
-            # First try google-genai (new SDK) with retry shield
-            try:
-                from google import genai
-                from google.genai import types
-                
-                self._client = genai.Client(
-                    api_key=self.api_key,
-                    http_options=types.HttpOptions(
-                        retry_options=types.HttpRetryOptions(attempts=3, initial_delay=1.5)
-                    )
+            # Fast-response client initialization
+            from google import genai
+            from google.genai import types
+            
+            self._client = genai.Client(
+                api_key=self.api_key,
+                http_options=types.HttpOptions(
+                    retry_options=types.HttpRetryOptions(attempts=2, initial_delay=0.5)
                 )
-                self._sdk_type = "google-genai"
-                logger.info("Initialized Google GenAI client with auto-retry shield.")
-                return
-            except ImportError:
-                pass
-
-            # Fall back to google-generativeai
-            import google.generativeai as genai_legacy
-            genai_legacy.configure(api_key=self.api_key)
-            self._client = genai_legacy.GenerativeModel(self.model_name)
-            self._sdk_type = "google-generativeai"
-            logger.info("Initialized Google GenerativeAI (legacy) client.")
+            )
+            self._sdk_type = "google-genai"
+            logger.info("Initialized fast Google GenAI client.")
+            return
         except Exception as e:
             logger.error(f"Failed to initialize Gemini client: {e}")
             self._client = None
