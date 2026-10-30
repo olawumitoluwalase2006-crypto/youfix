@@ -80,12 +80,19 @@ class GeminiService:
             return
 
         try:
-            # First try google-genai (new SDK)
+            # First try google-genai (new SDK) with retry shield
             try:
                 from google import genai
-                self._client = genai.Client(api_key=self.api_key)
+                from google.genai import types
+                
+                self._client = genai.Client(
+                    api_key=self.api_key,
+                    http_options=types.HttpOptions(
+                        retry_options=types.HttpRetryOptions(attempts=3, initial_delay=1.5)
+                    )
+                )
                 self._sdk_type = "google-genai"
-                logger.info("Initialized Google GenAI client.")
+                logger.info("Initialized Google GenAI client with auto-retry shield.")
                 return
             except ImportError:
                 pass
